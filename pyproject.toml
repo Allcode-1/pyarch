@@ -1,6 +1,6 @@
 [project]
 name = "PyArch-CLI"
-version = "0.1.2"
+version = "0.2.0"
 description = "Stateful CLI generator for Layered FastAPI projects"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -43,4 +43,6 @@ build-backend = "hatchling.build"
 packages = ["src/pyarch"]
 
 [dependency-groups]
-dev = []
+dev = [
+    "pytest>=9.1.1",
+]

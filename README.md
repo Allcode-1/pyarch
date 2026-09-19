@@ -6,7 +6,7 @@
 ![Typer](https://img.shields.io/badge/Typer-CLI-purple)
 ![Jinja2](https://img.shields.io/badge/Jinja2-templates-orange)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Status](https://img.shields.io/badge/status-MVP%2B-orange)
+![Status](https://img.shields.io/badge/status-v0.2.0-blue)
 
 PyArch is a CLI for creating and extending Layered FastAPI projects. It sets up
 the application structure, database, tests and Alembic, then lets you add CRUD
@@ -34,6 +34,15 @@ ready to change.
 - Alembic setup for relational databases
 - Tests and dependency setup through `uv`
 - Project-aware generation through `pyarch.toml`
+- Atomic project creation and rollback for failed extensions
+
+## v0.2.0 Highlights
+
+- Atomic project creation through a staging directory, with cleanup on failure
+- Rollback for failed module and auth generation
+- Database-specific Docker Compose files for PostgreSQL and SQLite
+- Refresh-token rotation protected against concurrent reuse on PostgreSQL
+- Self-tests for PyArch and an end-to-end generated-project workflow
 
 ## Quick Start
 
@@ -53,11 +62,30 @@ pyarch init my_project --database postgres
 cd my_project
 ```
 
-Copy `.env.example` to `.env` and set the database connection values. Start the services with Docker Compose:
+Copy `.env.example` to `.env` and set the database connection values. The
+generated Compose file matches the selected database: PostgreSQL projects get
+database services; SQLite projects get only migration and API services.
+
+Start the generated application:
 
 ```bash
 docker compose up -d
 ```
+
+After adding a generated module or integration that changes the database
+schema, create a revision with
+`uv run alembic revision --autogenerate -m "describe schema change"`. Then
+apply it with `uv run alembic upgrade head`.
+PyArch never autogenerates revisions during container startup: migration files
+are source code and should be reviewed and committed.
+
+## Safe Generation
+
+`pyarch init` builds the project in a staging directory and publishes it only
+after all generation steps complete. If setup fails, the staging directory is
+removed. `generate module` and `add integration` track every affected file and
+restore the previous state if a generation step fails, including the manifest
+and dependency files.
 
 Open `http://127.0.0.1:8000/docs` to use the generated Swagger UI.
 
@@ -149,7 +177,7 @@ Clone the repository and install the development environment:
 ```bash
 git clone https://github.com/Allcode-1/PyArch.git
 cd PyArch
-uv sync
+uv sync --group dev
 ```
 
 Run the CLI from the checkout:
@@ -162,6 +190,15 @@ Or install the current checkout as an editable CLI tool:
 
 ```bash
 uv tool install --editable .
+```
+
+Run the project checks before opening a pull request or releasing a version:
+
+```bash
+uv run pytest
+uv run ruff check src tests
+uv run mypy src tests
+uv build
 ```
 
 ## Architecture and Design
@@ -218,26 +255,28 @@ instead of producing incomplete files.
 
 ## Roadmap
 
-### v0.2
+### v0.2.0 (current)
 
-- safer generation and validation;
-- rollback on failed generation;
-- Redis integration foundation.
+- atomic project creation and cleanup on failure;
+- rollback for failed module and auth generation;
+- PostgreSQL- and SQLite-specific Compose templates;
+- self-test suite and generated-project integration coverage.
 
 ### v0.3
 
-- Redis integration;
-- scheduler integration;
+- Redis integration foundation;
+- opt-in cache-aside generation for CRUD modules;
 - dry-run mode.
 
 ### Later
 
+- scheduler integration;
 - more architectures;
 - plugin system;
 - asynchronous database access.
 
 ## Status
 
-PyArch is in early development. The main workflow is usable, but commands,
-templates, generated code and the manifest may still change before a stable
-release.
+PyArch v0.2.0 is an early alpha release. The main workflow is usable, but
+commands, templates, generated code and the manifest may still change before a
+stable release.
