@@ -35,8 +35,17 @@ def decode_refresh_payload(refresh_token: str) -> dict:
     return token_payload
 
 
-def get_refresh_session(db: Session, jti: str) -> RefreshSession:
-    refresh_session = db.scalar(select(RefreshSession).where(RefreshSession.jti == jti))
+def get_refresh_session(
+    db: Session,
+    jti: str,
+    *,
+    lock: bool = False,
+) -> RefreshSession:
+    statement = select(RefreshSession).where(RefreshSession.jti == jti)
+    if lock:
+        statement = statement.with_for_update()
+
+    refresh_session = db.scalar(statement)
 
     if not refresh_session:
         raise invalid_token_error()
@@ -133,7 +142,7 @@ def logout_user(refresh_token: str, db: Session) -> dict[str, str]:
 
 def refresh_tokens(refresh_token: str, db: Session) -> TokenPair:
     token_payload = decode_refresh_payload(refresh_token)
-    refresh_session = get_refresh_session(db, token_payload["jti"])
+    refresh_session = get_refresh_session(db, token_payload["jti"], lock=True)
 
     if refresh_session.revoked_at is not None:
         raise invalid_token_error()
