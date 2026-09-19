@@ -1,15 +1,12 @@
 import subprocess
 from collections.abc import Callable
-from typing import Never, TypeVar
+from typing import Never
 
 import typer
 from rich.console import Console
 
 console = Console()
-ResultT = TypeVar("ResultT")
-
-
-def execute_or_exit(action: Callable[[], ResultT]) -> ResultT:
+def execute_or_exit[ResultT](action: Callable[[], ResultT]) -> ResultT:
     try:
         return action()
     except (
