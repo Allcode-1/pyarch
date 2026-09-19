@@ -24,7 +24,7 @@ DATABASE_RUNTIME_DEPENDENCIES = {
 
 COMMON_DEV_DEPENDENCIES = (
     "pytest",
-    "httpx2",
+    "httpx",
     "ruff",
     "mypy",
 )
