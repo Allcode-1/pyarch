@@ -31,11 +31,10 @@ services:
       timeout: 3s
       retries: 10
 
-
   migrate:
     build: .
     env_file: .env
-    command: sh -c "uv run alembic revision --autogenerate -m "init" && uv run alembic upgrade head"
+    command: uv run alembic upgrade head
     depends_on:
       db:
         condition: service_healthy
@@ -48,7 +47,6 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-
 
 volumes:
   postgres_data:

@@ -1,3 +1,5 @@
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 
@@ -53,3 +55,37 @@ def append_text_once(file_path: Path, marker: str, text: str) -> bool:
     file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_text(f"{content}{separator}{text}", encoding="utf-8")
     return True
+
+
+@contextmanager
+def rollback_file_changes(
+    files: tuple[Path, ...],
+    directories: tuple[Path, ...] = (),
+) -> Iterator[None]:
+    """Restore tracked files if a generation step fails."""
+
+    snapshots = {
+        file_path: file_path.read_bytes() if file_path.is_file() else None
+        for file_path in files
+    }
+    created_directories = tuple(
+        directory for directory in directories if not directory.exists()
+    )
+
+    try:
+        yield
+    except BaseException:
+        for file_path, content in snapshots.items():
+            if content is None:
+                file_path.unlink(missing_ok=True)
+            else:
+                file_path.parent.mkdir(parents=True, exist_ok=True)
+                file_path.write_bytes(content)
+
+        for directory in sorted(created_directories, key=lambda path: len(path.parts), reverse=True):
+            try:
+                directory.rmdir()
+            except OSError:
+                pass
+
+        raise

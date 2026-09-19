@@ -2,6 +2,7 @@ from pathlib import Path
 
 from pyarch.config.manifest import find_project_root, load_manifest, save_manifest
 from pyarch.config.models import Architecture
+from pyarch.generators.common.filesystem import rollback_file_changes
 from pyarch.generators.integration.auth import AUTH_INTEGRATION_NAME
 from pyarch.generators.module.layered import (
     create_layered_module,
@@ -32,13 +33,27 @@ def create_module(
             "Run `pyarch add integration auth` first."
         )
 
-    created_files = create_layered_module(
-        project_root,
-        normalized_name,
-        manifest.database.engine,
-        protected=protected,
+    app_path = project_root / manifest.paths.application
+    tracked_files = (
+        app_path / "models" / f"{normalized_name}.py",
+        app_path / "schemas" / f"{normalized_name}.py",
+        app_path / "repositories" / f"{normalized_name}.py",
+        app_path / "services" / f"{normalized_name}.py",
+        app_path / "api" / "v1" / f"{normalized_name}.py",
+        project_root / manifest.paths.tests / f"test_{normalized_name}.py",
+        app_path / "models" / "__init__.py",
+        app_path / "api" / "v1" / "router.py",
+        project_root / "pyarch.toml",
     )
 
-    manifest.state.modules.append(normalized_name)
-    save_manifest(project_root, manifest)
+    with rollback_file_changes(tracked_files):
+        created_files = create_layered_module(
+            project_root,
+            normalized_name,
+            manifest.database.engine,
+            protected=protected,
+        )
+        manifest.state.modules.append(normalized_name)
+        save_manifest(project_root, manifest)
+
     return project_root, created_files
