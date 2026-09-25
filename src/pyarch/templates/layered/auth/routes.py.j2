@@ -9,7 +9,6 @@ from app.auth.schemas import RefreshToken, TokenPair, UserCreate, UserRead
 from app.db.session import get_db
 from app.models.user import User
 
-
 router = APIRouter(prefix="/auth", tags=["auth"])
 DbSession = Annotated[Session, Depends(get_db)]
 CurrentUser = Annotated[User, Depends(get_current_active_user)]

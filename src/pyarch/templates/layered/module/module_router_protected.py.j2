@@ -14,7 +14,6 @@ from app.schemas.{{ module_name }} import (
 )
 from app.services.{{ module_name }} import {{ model_name }}Service
 
-
 router = APIRouter()
 DbSession = Annotated[Session, Depends(get_db)]
 CurrentUser = Annotated[User, Depends(get_current_active_user)]

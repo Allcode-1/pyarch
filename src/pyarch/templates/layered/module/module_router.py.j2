@@ -12,7 +12,6 @@ from app.schemas.{{ module_name }} import (
 )
 from app.services.{{ module_name }} import {{ model_name }}Service
 
-
 router = APIRouter()
 DbSession = Annotated[Session, Depends(get_db)]
 PaginationDep = Annotated[Pagination, Depends(get_pagination)]

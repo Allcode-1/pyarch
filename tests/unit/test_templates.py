@@ -1,8 +1,11 @@
 from pathlib import Path
 
-from pyarch.config.models import DatabaseEngine
 from pyarch.generators.common.renderer import render_template
-from pyarch.generators.project.base import create_docker_compose
+from pyarch.generators.project.base import (
+    create_docker_compose,
+    create_dockerignore,
+    create_ruff_config,
+)
 
 
 def test_python_templates_render_to_valid_python() -> None:
@@ -31,37 +34,32 @@ def test_python_templates_render_to_valid_python() -> None:
 
 def test_compose_templates_do_not_manage_migrations() -> None:
     postgres_compose = render_template("project/base/docker-compose.postgres.yml.j2")
-    sqlite_compose = render_template("project/base/docker-compose.sqlite.yml.j2")
-
-    for compose in (postgres_compose, sqlite_compose):
-        assert "alembic revision" not in compose
-        assert "alembic upgrade" not in compose
-        assert "migrate:" not in compose
-        assert "service_completed_successfully" not in compose
-
-    assert "tests_db:" in postgres_compose
+    assert "alembic revision" not in postgres_compose
+    assert "alembic upgrade" not in postgres_compose
+    assert "migrate:" not in postgres_compose
+    assert "service_completed_successfully" not in postgres_compose
+    assert "image: backend:dev" not in postgres_compose
+    assert "tests_db:" not in postgres_compose
     assert "postgres_data:" in postgres_compose
-    assert "tests_db:" not in sqlite_compose
-    assert "postgres_data:" not in sqlite_compose
 
 
-def test_compose_generator_selects_template_for_database(
+def test_postgres_compose_and_dockerignore_are_generated(
     tmp_path: Path,
 ) -> None:
     postgres_dir = tmp_path / "postgres"
-    sqlite_dir = tmp_path / "sqlite"
     postgres_dir.mkdir()
-    sqlite_dir.mkdir()
 
-    create_docker_compose(postgres_dir, DatabaseEngine.POSTGRES)
-    create_docker_compose(sqlite_dir, DatabaseEngine.SQLITE)
+    create_docker_compose(postgres_dir)
+    create_dockerignore(postgres_dir)
+    create_ruff_config(postgres_dir)
 
     postgres_compose = (postgres_dir / "docker-compose.yml").read_text(
         encoding="utf-8"
     )
-    sqlite_compose = (sqlite_dir / "docker-compose.yml").read_text(
-        encoding="utf-8"
-    )
+    dockerignore = (postgres_dir / ".dockerignore").read_text(encoding="utf-8")
+    ruff_config = (postgres_dir / "ruff.toml").read_text(encoding="utf-8")
 
-    assert "tests_db:" in postgres_compose
-    assert "tests_db:" not in sqlite_compose
+    assert "tests_db:" not in postgres_compose
+    assert ".env" in dockerignore
+    assert ".venv/" in dockerignore
+    assert "alembic/versions" in ruff_config

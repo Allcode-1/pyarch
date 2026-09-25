@@ -40,7 +40,7 @@ def upgrade_database(message: str, start: Path | None = None) -> tuple[Path, boo
     run_command("docker", "compose", "down", cwd=project_root)
     run_command("docker", "compose", "up", "-d", "--wait", "db", cwd=project_root)
     if not schema_changes_pending(project_root):
-        run_command("docker", "compose", "up", "-d", cwd=project_root)
+        run_command("docker", "compose", "up", "-d", "--build", cwd=project_root)
         return project_root, False
 
     run_command(
@@ -54,7 +54,7 @@ def upgrade_database(message: str, start: Path | None = None) -> tuple[Path, boo
         cwd=project_root,
     )
     run_command("uv", "run", "alembic", "upgrade", "head", cwd=project_root)
-    run_command("docker", "compose", "up", "-d", cwd=project_root)
+    run_command("docker", "compose", "up", "-d", "--build", cwd=project_root)
     return project_root, True
 
 
@@ -84,13 +84,23 @@ def validate_database_project(start: Path | None = None) -> Path:
 
 
 def schema_changes_pending(project_root: Path) -> bool:
-    try:
-        run_command("uv", "run", "alembic", "check", cwd=project_root)
-    except subprocess.CalledProcessError as error:
-        if error.returncode == 1:
-            return True
-        raise
-    return False
+    command = ("uv", "run", "alembic", "check")
+    result = subprocess.run(
+        command,
+        cwd=project_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        return False
+
+    output = "\n".join(part for part in (result.stdout, result.stderr) if part)
+    if "New upgrade operations detected" in output:
+        return True
+
+    details = output.strip() or f"exit status {result.returncode}"
+    raise ValueError(f"Alembic check failed: {details}")
 
 
 def validate_migration_message(message: str) -> str:

@@ -33,9 +33,8 @@ def test_generated_project_supports_module_and_auth_workflow(
     assert all(file_path.is_file() for file_path in protected_module_files)
     assert manifest.state.modules == ["tasks", "notes"]
     assert manifest.state.integrations == ["auth"]
-    assert "tests_db:" not in (project_dir / "docker-compose.yml").read_text(
-        encoding="utf-8"
-    )
+    assert not (project_dir / "docker-compose.yml").exists()
+    assert not (project_dir / "Dockerfile").exists()
     assert "get_current_active_user" in (
         project_dir / "app" / "api" / "v1" / "notes.py"
     ).read_text(encoding="utf-8")
@@ -46,6 +45,17 @@ def test_generated_project_supports_module_and_auth_workflow(
         "TEST_DATABASE_URL": "sqlite:///./app_test.db",
     }
     environment.pop("VIRTUAL_ENV", None)
+    result = subprocess.run(
+        ("uv", "run", "ruff", "check", "app", "tests"),
+        cwd=project_dir,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+
     result = subprocess.run(
         ("uv", "run", "pytest"),
         cwd=project_dir,

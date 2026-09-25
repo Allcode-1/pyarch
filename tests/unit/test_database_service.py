@@ -32,7 +32,6 @@ def test_initialize_database_starts_only_db_and_creates_initial_revision(
         "run_command",
         lambda *command, cwd: calls.append(command),
     )
-
     assert database.initialize_database(project_root) == project_root
     assert calls == [
         ("docker", "compose", "up", "-d", "--wait", "db"),
@@ -61,6 +60,7 @@ def test_upgrade_restarts_compose_without_creating_empty_revision(
         "run_command",
         lambda *command, cwd: calls.append(command),
     )
+    monkeypatch.setattr(database, "schema_changes_pending", lambda _root: False)
 
     assert database.upgrade_database("add task priority", project_root) == (
         project_root,
@@ -69,8 +69,7 @@ def test_upgrade_restarts_compose_without_creating_empty_revision(
     assert calls == [
         ("docker", "compose", "down"),
         ("docker", "compose", "up", "-d", "--wait", "db"),
-        ("uv", "run", "alembic", "check"),
-        ("docker", "compose", "up", "-d"),
+        ("docker", "compose", "up", "-d", "--build"),
     ]
 
 
@@ -81,12 +80,12 @@ def test_upgrade_restarts_compose_only_after_schema_change(
     project_root = create_database_project(tmp_path)
     calls: list[tuple[str, ...]] = []
 
-    def record(*command: str, cwd: Path) -> None:
-        calls.append(command)
-        if command == ("uv", "run", "alembic", "check"):
-            raise subprocess.CalledProcessError(1, command)
-
-    monkeypatch.setattr(database, "run_command", record)
+    monkeypatch.setattr(
+        database,
+        "run_command",
+        lambda *command, cwd: calls.append(command),
+    )
+    monkeypatch.setattr(database, "schema_changes_pending", lambda _root: True)
 
     assert database.upgrade_database("add task priority", project_root) == (
         project_root,
@@ -95,7 +94,6 @@ def test_upgrade_restarts_compose_only_after_schema_change(
     assert calls == [
         ("docker", "compose", "down"),
         ("docker", "compose", "up", "-d", "--wait", "db"),
-        ("uv", "run", "alembic", "check"),
         (
             "uv",
             "run",
@@ -106,8 +104,39 @@ def test_upgrade_restarts_compose_only_after_schema_change(
             "add task priority",
         ),
         ("uv", "run", "alembic", "upgrade", "head"),
-        ("docker", "compose", "up", "-d"),
+        ("docker", "compose", "up", "-d", "--build"),
     ]
+
+
+def test_schema_changes_pending_uses_alembic_marker_not_windows_exit_code(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    result = subprocess.CompletedProcess(
+        args=("uv", "run", "alembic", "check"),
+        returncode=4294967295,
+        stderr="FAILED: New upgrade operations detected: [('add_table', 'tasks')]",
+        stdout="",
+    )
+    monkeypatch.setattr(database.subprocess, "run", lambda *args, **kwargs: result)
+
+    assert database.schema_changes_pending(tmp_path) is True
+
+
+def test_schema_changes_pending_reports_an_actual_alembic_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    result = subprocess.CompletedProcess(
+        args=("uv", "run", "alembic", "check"),
+        returncode=255,
+        stderr="ERROR: invalid database URL",
+        stdout="",
+    )
+    monkeypatch.setattr(database.subprocess, "run", lambda *args, **kwargs: result)
+
+    with pytest.raises(ValueError, match="invalid database URL"):
+        database.schema_changes_pending(tmp_path)
 
 
 def test_initialize_rejects_existing_revisions(tmp_path: Path) -> None:

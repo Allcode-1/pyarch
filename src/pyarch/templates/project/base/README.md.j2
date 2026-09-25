@@ -28,4 +28,7 @@ After changing models, create, apply, and restart with a reviewed migration:
 ```bash
 pyarch db upgrade --message "describe schema change"
 ```
+{% else -%}
+SQLite projects use a local database only. Docker Compose and `pyarch db`
+lifecycle commands are available for PostgreSQL projects.
 {% endif %}

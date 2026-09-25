@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import HTTPException, status
 from jwt.exceptions import InvalidTokenError
@@ -134,7 +134,7 @@ def logout_user(refresh_token: str, db: Session) -> dict[str, str]:
     token_payload = decode_refresh_payload(refresh_token)
     refresh_session = get_refresh_session(db, token_payload["jti"])
 
-    refresh_session.revoked_at = datetime.now(timezone.utc)
+    refresh_session.revoked_at = datetime.now(UTC)
     db.commit()
 
     return {"message": "Logged out"}
@@ -149,9 +149,9 @@ def refresh_tokens(refresh_token: str, db: Session) -> TokenPair:
 
     expires_at = refresh_session.expires_at
     if expires_at.tzinfo is None:
-        expires_at = expires_at.replace(tzinfo=timezone.utc)
+        expires_at = expires_at.replace(tzinfo=UTC)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if expires_at < now:
         raise invalid_token_error()
 

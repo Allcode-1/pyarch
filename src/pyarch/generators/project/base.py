@@ -36,9 +36,12 @@ def create_base_dir(
     # .gitignote
     ensure_gitignore_entries(project_dir, "base", BASE_GITIGNORE_ENTRIES)
 
-    # docker 
-    create_dockerfile(project_dir)
-    create_docker_compose(project_dir, database)
+    if database is DatabaseEngine.POSTGRES:
+        create_dockerfile(project_dir)
+        create_dockerignore(project_dir)
+        create_docker_compose(project_dir)
+
+    create_ruff_config(project_dir)
 
     # docs
     create_docs_dir(project_dir)
@@ -53,16 +56,24 @@ def create_dockerfile(project_dir: Path) -> None:
     )
 
 
-def create_docker_compose(project_dir: Path, database: DatabaseEngine) -> None:
-    template_name = (
-        "project/base/docker-compose.postgres.yml.j2"
-        if database is DatabaseEngine.POSTGRES
-        else "project/base/docker-compose.sqlite.yml.j2"
+def create_dockerignore(project_dir: Path) -> None:
+    create_file_from_template(
+        template_name="project/base/dockerignore.j2",
+        output_path=project_dir / ".dockerignore",
     )
 
+
+def create_docker_compose(project_dir: Path) -> None:
     create_file_from_template(
-        template_name=template_name,
+        template_name="project/base/docker-compose.postgres.yml.j2",
         output_path=project_dir / "docker-compose.yml",
+    )
+
+
+def create_ruff_config(project_dir: Path) -> None:
+    create_file_from_template(
+        template_name="project/base/ruff.toml.j2",
+        output_path=project_dir / "ruff.toml",
     )
 
 

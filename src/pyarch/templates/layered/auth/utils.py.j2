@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import bcrypt
@@ -28,7 +28,7 @@ def encode_jwt(
     )
 
     to_encode = payload.copy()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     expire = now + (
         expire_timedelta or timedelta(minutes=access_expire_minutes)
     )
