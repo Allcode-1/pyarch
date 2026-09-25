@@ -29,13 +29,15 @@ def test_python_templates_render_to_valid_python() -> None:
         compile(source, template_name, "exec")
 
 
-def test_compose_templates_only_apply_existing_migrations() -> None:
+def test_compose_templates_do_not_manage_migrations() -> None:
     postgres_compose = render_template("project/base/docker-compose.postgres.yml.j2")
     sqlite_compose = render_template("project/base/docker-compose.sqlite.yml.j2")
 
     for compose in (postgres_compose, sqlite_compose):
         assert "alembic revision" not in compose
-        assert "uv run alembic upgrade head" in compose
+        assert "alembic upgrade" not in compose
+        assert "migrate:" not in compose
+        assert "service_completed_successfully" not in compose
 
     assert "tests_db:" in postgres_compose
     assert "postgres_data:" in postgres_compose

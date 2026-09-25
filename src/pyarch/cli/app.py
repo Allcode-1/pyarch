@@ -1,6 +1,7 @@
 import typer
 
 from pyarch.cli.add import app as add_app
+from pyarch.cli.db import app as db_app
 from pyarch.cli.generate import app as generate_app
 from pyarch.cli.info import show_info
 from pyarch.cli.init import init_project
@@ -26,4 +27,10 @@ app.add_typer(
     add_app,
     name="add",
     help="Add project integrations.",
+)
+
+app.add_typer(
+    db_app,
+    name="db",
+    help="Create and apply database migrations.",
 )

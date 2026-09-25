@@ -62,9 +62,12 @@ pyarch init my_project --database postgres
 cd my_project
 ```
 
-Copy `.env.example` to `.env` and set the database connection values. The
-generated Compose file matches the selected database: PostgreSQL projects get
-database services; SQLite projects get only migration and API services.
+Copy `.env.example` to `.env` and set the database connection values. For a
+PostgreSQL project, initialize the database schema before starting the app:
+
+```bash
+pyarch db init
+```
 
 Start the generated application:
 
@@ -72,12 +75,17 @@ Start the generated application:
 docker compose up -d
 ```
 
-After adding a generated module or integration that changes the database
-schema, create a revision with
-`uv run alembic revision --autogenerate -m "describe schema change"`. Then
-apply it with `uv run alembic upgrade head`.
-PyArch never autogenerates revisions during container startup: migration files
-are source code and should be reviewed and committed.
+After a model change in a PostgreSQL project, generate and apply a reviewed
+revision and restart the application with:
+
+```bash
+pyarch db upgrade --message "describe schema change"
+```
+
+Without `--message`, PyArch prompts for one. When Alembic finds no metadata
+changes, `db upgrade` restarts Compose but creates no empty revision. Compose
+never runs migrations implicitly; migration files remain source code and should
+be reviewed and committed.
 
 ## Safe Generation
 
