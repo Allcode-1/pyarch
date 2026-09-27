@@ -2,6 +2,7 @@ from pathlib import Path
 
 from pyarch.generators.common.renderer import render_template
 from pyarch.generators.project.base import (
+    create_ci_workflow,
     create_docker_compose,
     create_dockerignore,
     create_ruff_config,
@@ -61,3 +62,18 @@ def test_postgres_compose_and_dockerignore_are_generated(
     assert ".env" in dockerignore
     assert ".venv/" in dockerignore
     assert "alembic/versions" in ruff_config
+
+
+def test_generated_ci_runs_only_lint_and_tests(tmp_path: Path) -> None:
+    create_ci_workflow(tmp_path)
+
+    workflow = (tmp_path / ".github" / "workflows" / "ci.yml").read_text(
+        encoding="utf-8"
+    )
+
+    assert "push:" in workflow
+    assert "pull_request:" in workflow
+    assert "uv run ruff check app tests" in workflow
+    assert "uv run pytest" in workflow
+    assert "mypy" not in workflow
+    assert "uv build" not in workflow

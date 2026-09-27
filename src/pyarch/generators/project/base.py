@@ -42,6 +42,7 @@ def create_base_dir(
         create_docker_compose(project_dir)
 
     create_ruff_config(project_dir)
+    create_ci_workflow(project_dir)
 
     # docs
     create_docs_dir(project_dir)
@@ -74,6 +75,13 @@ def create_ruff_config(project_dir: Path) -> None:
     create_file_from_template(
         template_name="project/base/ruff.toml.j2",
         output_path=project_dir / "ruff.toml",
+    )
+
+
+def create_ci_workflow(project_dir: Path) -> None:
+    create_file_from_template(
+        template_name="project/base/ci.yml.j2",
+        output_path=project_dir / ".github" / "workflows" / "ci.yml",
     )
 
 
