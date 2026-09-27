@@ -114,7 +114,7 @@ def load_manifest(project_dir: Path) -> ProjectManifest:
 
 
 def save_manifest(project_dir: Path, manifest: ProjectManifest) -> Path:
-    
+
     manifest_path = project_dir / MANIFEST_NAME
     temporary_path = manifest_path.with_suffix(".toml.tmp")
 

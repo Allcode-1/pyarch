@@ -13,9 +13,12 @@ def test_rollback_file_changes_restores_files_and_removes_new_directories(
     created_directory = tmp_path / "created"
     created_file = created_directory / "new.txt"
 
-    with pytest.raises(RuntimeError, match="generation failed"), rollback_file_changes(
-        (existing_file, created_file),
-        (created_directory,),
+    with (
+        pytest.raises(RuntimeError, match="generation failed"),
+        rollback_file_changes(
+            (existing_file, created_file),
+            (created_directory,),
+        ),
     ):
         existing_file.write_text("after", encoding="utf-8")
         created_directory.mkdir()

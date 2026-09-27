@@ -82,7 +82,9 @@ def rollback_file_changes(
                 file_path.parent.mkdir(parents=True, exist_ok=True)
                 file_path.write_bytes(content)
 
-        for directory in sorted(created_directories, key=lambda path: len(path.parts), reverse=True):
+        for directory in sorted(
+            created_directories, key=lambda path: len(path.parts), reverse=True
+        ):
             try:
                 directory.rmdir()
             except OSError:

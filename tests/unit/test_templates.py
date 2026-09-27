@@ -53,9 +53,7 @@ def test_postgres_compose_and_dockerignore_are_generated(
     create_dockerignore(postgres_dir)
     create_ruff_config(postgres_dir)
 
-    postgres_compose = (postgres_dir / "docker-compose.yml").read_text(
-        encoding="utf-8"
-    )
+    postgres_compose = (postgres_dir / "docker-compose.yml").read_text(encoding="utf-8")
     dockerignore = (postgres_dir / ".dockerignore").read_text(encoding="utf-8")
     ruff_config = (postgres_dir / "ruff.toml").read_text(encoding="utf-8")
 

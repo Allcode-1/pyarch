@@ -52,7 +52,7 @@ def create_base_dir(
 def create_dockerfile(project_dir: Path) -> None:
     create_file_from_template(
         template_name="project/base/Dockerfile.j2",
-        output_path=project_dir / "Dockerfile"
+        output_path=project_dir / "Dockerfile",
     )
 
 

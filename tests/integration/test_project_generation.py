@@ -81,7 +81,9 @@ def test_create_project_publishes_completed_staging_directory(
         create_readme_file,
     )
     monkeypatch.setattr(create_project_service, "create_manifest", create_manifest)
-    monkeypatch.setattr(create_project_service, "run_command", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        create_project_service, "run_command", lambda *_args, **_kwargs: None
+    )
 
     project_dir = create_project_service.create_project(
         "demo",

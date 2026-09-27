@@ -16,7 +16,7 @@ def create_layered_module(
     *,
     protected: bool = False,
 ) -> tuple[Path, ...]:
-    
+
     database = DatabaseEngine(database)
 
     module_name = normalize_module_name(module_name)

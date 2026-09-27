@@ -54,7 +54,7 @@ def install_dependencies(
     project_dir: Path,
     database: DatabaseEngine,
 ) -> None:
-    
+
     runtime_dependencies = list(COMMON_RUNTIME_DEPENDENCIES)
     runtime_dependencies.extend(SQL_RUNTIME_DEPENDENCIES)
     runtime_dependencies.extend(DATABASE_RUNTIME_DEPENDENCIES[database])
@@ -64,7 +64,6 @@ def install_dependencies(
 
 
 def create_layered_arch(app_path: Path) -> None:
-
     """Create packages and shared files for a Layered application."""
 
     create_file_from_template(
@@ -119,7 +118,7 @@ def create_database_setup(
     app_path: Path,
     database: DatabaseEngine,
 ) -> None:
-    
+
     create_file_from_template(
         template_name="layered/config.py.j2",
         output_path=app_path / "core" / "config.py",
@@ -140,7 +139,7 @@ def create_test_setup(
     project_dir: Path,
     database: DatabaseEngine,
 ) -> None:
-    
+
     create_module_path(project_dir / "tests")
 
     create_file_from_template(
@@ -152,7 +151,7 @@ def create_test_setup(
 def initialize_alembic(project_dir: Path) -> None:
 
     run_command("uv", "run", "alembic", "init", "alembic", cwd=project_dir)
-    
+
     create_file_from_template(
         template_name="layered/alembic_env.py.j2",
         output_path=project_dir / "alembic" / "env.py",

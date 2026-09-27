@@ -6,6 +6,8 @@ import typer
 from rich.console import Console
 
 console = Console()
+
+
 def execute_or_exit[ResultT](action: Callable[[], ResultT]) -> ResultT:
     try:
         return action()

@@ -9,7 +9,9 @@ from pyarch.cli.app import app
 runner = CliRunner()
 
 
-def test_db_init_calls_database_service(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_db_init_calls_database_service(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     monkeypatch.setattr(db, "initialize_database", lambda: tmp_path)
 
     result = runner.invoke(app, ["db", "init"])
@@ -19,7 +21,9 @@ def test_db_init_calls_database_service(monkeypatch: pytest.MonkeyPatch, tmp_pat
     assert "not started" in result.stdout
 
 
-def test_db_upgrade_prompts_for_message(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_db_upgrade_prompts_for_message(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     received: list[str] = []
 
     def upgrade(message: str) -> tuple[Path, bool]:
@@ -35,7 +39,9 @@ def test_db_upgrade_prompts_for_message(monkeypatch: pytest.MonkeyPatch, tmp_pat
     assert "Compose restarted" in result.stdout
 
 
-def test_db_upgrade_accepts_message_option(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_db_upgrade_accepts_message_option(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     received: list[str] = []
 
     def upgrade(message: str) -> tuple[Path, bool]:
