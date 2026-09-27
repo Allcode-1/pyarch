@@ -15,11 +15,15 @@ pyarch db init
 
 4. Run Docker Compose:
 {% else -%}
-3. Run Docker Compose:
+3. Start the application locally:
 {% endif %}
 
 ```bash
+{% if database == "postgres" -%}
 docker compose up -d
+{% else -%}
+uv run fastapi dev app/main.py
+{% endif %}
 ```
 
 {% if database == "postgres" -%}
@@ -30,5 +34,6 @@ pyarch db upgrade --message "describe schema change"
 ```
 {% else -%}
 SQLite projects use a local database only. Docker Compose and `pyarch db`
-lifecycle commands are available for PostgreSQL projects.
+lifecycle commands are available for PostgreSQL projects. Run SQLite migrations
+directly with Alembic when needed.
 {% endif %}

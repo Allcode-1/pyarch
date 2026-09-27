@@ -28,6 +28,7 @@ ready to change.
 - Layered FastAPI project structure
 - PostgreSQL and SQLite support
 - Complete CRUD modules with models, schemas, repositories, services and routes
+- GitHub Actions workflow for generated-project linting and tests
 - Automatic model and router registration
 - JWT auth integration with generated RSA keys
 - Protected CRUD routes
@@ -40,7 +41,7 @@ ready to change.
 
 - Atomic project creation through a staging directory, with cleanup on failure
 - Rollback for failed module and auth generation
-- Database-specific Docker Compose files for PostgreSQL and SQLite
+- Docker Compose support for PostgreSQL projects
 - Refresh-token rotation protected against concurrent reuse on PostgreSQL
 - Self-tests for PyArch and an end-to-end generated-project workflow
 
@@ -100,11 +101,15 @@ Open `http://127.0.0.1:8000/docs` to use the generated Swagger UI.
 You can now extend the project:
 
 ```bash
-pyarch generate module users
+pyarch generate module user
 pyarch add integration auth
-pyarch generate module tasks --protected
+pyarch generate module task --protected
 pyarch info
 ```
+
+Module names must be singular identifiers. PyArch derives the plural table and
+route names from them: use `user` to generate `/users` and the `users` table,
+not `users`.
 
 ## What Gets Generated
 
@@ -145,9 +150,9 @@ Each generated CRUD module adds:
 | ------------------------------------------- | ------------------------------------------------ |
 | `pyarch init <name>`                        | Create a Layered FastAPI project                 |
 | `pyarch init <name> --database <engine>`    | Select PostgreSQL or SQLite                      |
-| `pyarch generate module <name>`             | Add a CRUD module to the current project         |
+| `pyarch generate module <singular-name>`    | Add a CRUD module to the current project         |
 | `pyarch add integration auth`               | Add JWT authentication and user management       |
-| `pyarch generate module <name> --protected` | Generate CRUD routes that require authentication |
+| `pyarch generate module <singular-name> --protected` | Generate protected CRUD routes           |
 | `pyarch info`                               | Show the current project configuration           |
 | `pyarch --help`                             | Show CLI help                                    |
 
@@ -164,6 +169,9 @@ Current limitations:
 
 - only Layered Architecture is supported;
 - generated applications use synchronous database access;
+- SQLite projects run locally and do not include Docker Compose; `pyarch db`
+  lifecycle commands are PostgreSQL-only. SQLite migrations can be run with
+  Alembic directly;
 - generated projects are starter scaffolds and still require
   application-specific configuration and code;
 - the manifest format may change before a stable release.
@@ -267,7 +275,7 @@ instead of producing incomplete files.
 
 - atomic project creation and cleanup on failure;
 - rollback for failed module and auth generation;
-- PostgreSQL- and SQLite-specific Compose templates;
+- PostgreSQL Compose template and SQLite local setup;
 - self-test suite and generated-project integration coverage.
 
 ### v0.3
