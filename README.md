@@ -6,7 +6,7 @@
 ![Typer](https://img.shields.io/badge/Typer-CLI-purple)
 ![Jinja2](https://img.shields.io/badge/Jinja2-templates-orange)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Status](https://img.shields.io/badge/status-v0.2.0-blue)
+![Status](https://img.shields.io/badge/status-v0.2.1-blue)
 
 PyArch is a CLI for creating and extending Layered FastAPI projects. It sets up
 the application structure, database, tests and Alembic, then lets you add CRUD
@@ -37,7 +37,7 @@ ready to change.
 - Project-aware generation through `pyarch.toml`
 - Atomic project creation and rollback for failed extensions
 
-## v0.2.0 Highlights
+## v0.2.1 Highlights
 
 - Atomic project creation through a staging directory, with cleanup on failure
 - Rollback for failed module and auth generation
@@ -271,7 +271,13 @@ instead of producing incomplete files.
 
 ## Roadmap
 
-### v0.2.0 (current)
+### v0.2.1 (current)
+
+- singular module-name contract and corrected SQLite workflow documentation;
+- generated GitHub Actions workflow for linting and tests;
+- package and generated-manifest versions kept in sync.
+
+### v0.2.0
 
 - atomic project creation and cleanup on failure;
 - rollback for failed module and auth generation;
@@ -293,6 +299,6 @@ instead of producing incomplete files.
 
 ## Status
 
-PyArch v0.2.0 is an early alpha release. The main workflow is usable, but
+PyArch v0.2.1 is an early alpha release. The main workflow is usable, but
 commands, templates, generated code and the manifest may still change before a
 stable release.

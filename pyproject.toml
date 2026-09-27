@@ -1,6 +1,6 @@
 [project]
 name = "PyArch-CLI"
-version = "0.2.0"
+version = "0.2.1"
 description = "Stateful CLI generator for Layered FastAPI projects"
 readme = "README.md"
 requires-python = ">=3.13"
